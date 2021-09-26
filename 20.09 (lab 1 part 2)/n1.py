@@ -3,6 +3,6 @@ import turtle
 
 turtle.shape('turtle')
 
-for i in range(40):
+while True:
     turtle.forward(random.randint(1,30))
     turtle.left(random.randint(-179,180))

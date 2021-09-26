@@ -10,16 +10,20 @@ vy = 80
 ax = 0
 ay = -10
 
-x = -400
+k = 0.05
+
+x = -200
 y = 0
 
 turtle.penup()
-turtle.goto(-400,0)
+turtle.goto(x,y)
 turtle.pendown()
 
 for i in range(500):
     x += vx * dt + ax * dt / 2
     y += vy * dt + ay * dt / 2
+    ax = -k * vx
+    ay = -k * vy - 10
     vx += ax * dt
     vy += ay * dt
 
@@ -27,5 +31,5 @@ for i in range(500):
     
     if y < 0:
         y = -y
-        vy = -0.8 * vy
-        vx = 0.7 * vx
+        vy = -vy
+        vx = vx
