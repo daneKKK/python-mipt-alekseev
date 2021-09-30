@@ -1,30 +1,32 @@
 import pygame
 from pygame.draw import *
 
+pygame.init()
+
 FPS = 30
 screen = pygame.display.set_mode((400, 400))
 
-#фон
+#Background
 rect(screen, (150, 150, 150), (0, 0, 400, 400))
 
-#лицо смайла
+#Face
 circle(screen, (0, 0, 0), (200, 200), 100)
 circle(screen, (255, 255, 0), (200, 200), 99)
 
-#левый глаз смайла
+#Left eye
 circle(screen, (0, 0, 0), (150, 175), 20)
 circle(screen, (255, 0, 0), (150, 175), 19)
 circle(screen, (0, 0, 0), (150, 175), 5)
 
-#правый глаз смайла
+#Right eye
 circle(screen, (0, 0, 0), (250, 175), 22)
 circle(screen, (255, 0, 0), (250, 175), 21)
 circle(screen, (0, 0, 0), (250, 175), 7)
 
-#рот смайла
+#Mouth
 rect(screen, (0, 0, 0), (150, 250, 100, 20))
 
-#брови смайла
+#Brows
 polygon(screen, (0, 0, 0), ((175, 165), (180, 160), (100, 115), (95, 120)))
 polygon(screen, (0, 0, 0), ((225, 170), (220, 165), (300, 95), (305, 100)))
 

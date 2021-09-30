@@ -1,21 +1,9 @@
 import pygame
 from pygame.draw import *
 
-pygame.init()
-
-FPS = 30
-screen = pygame.display.set_mode((600, 800))
-
-#Background
-rect(screen, (120, 120, 120), (0, 0, 600, 350))
-
-#Objects at the sky
-circle(screen, (255, 255, 255), (520, 80), 40)
-ellipse(screen, (70, 70, 70), (330, 110, 500, 50))
-ellipse(screen, (40, 40, 40), (280, 200, 400, 50))
-
-#House:
+#Define of house:
 def house(x, y, size, transparency):
+    #We create a new surface for house so we can make it transparent 
     surface = pygame.Surface((600, 800), pygame.SRCALPHA)
     
     #First floor
@@ -75,11 +63,10 @@ def house(x, y, size, transparency):
 
     
 def ghost(x, y, size, transparency, orientation):
+    #New surface so we can make it transparent
     surface = pygame.Surface((600, 800), pygame.SRCALPHA)
-    #Head
-    circle(surface, (179, 179, 179, transparency),
-           (x - size * orientation * 5, y + size * 10), size * 17)
-    #Borders of ghost
+
+    #We set a relative coordinates for outline of ghost
     coords = ((x - orientation * size * 15, y),
               (x - orientation * size * 17, y + size * 24),
               (x - orientation * size * 20, y + size * 40),
@@ -112,25 +99,27 @@ def ghost(x, y, size, transparency, orientation):
               (x + orientation * size * 17, y + size * 8),
               (x + orientation * size * 12, y + size * 4),
               )
-    #Polygon and aalines following borders
+
+    #Grey polygon and black aalines follow these coordinates
     polygon(surface, (179, 179, 179, transparency), coords)
-    aalines(surface, (179, 179, 179, transparency), True, coords)
-    #Eyes
+    aalines(surface, (0, 0, 0, transparency), True, coords)
+
+    #Head and eyes
+    circle(surface, (179, 179, 179, transparency),
+           (x - size * orientation * 5, y + size * 10), size * 17)
     circle(surface, (135, 205, 222, transparency),
            (x - size * orientation * 15, y + size * 10), size * 4)
     circle(surface, (0, 0, 0, transparency),
            (x - size * orientation * 16, y + size * 10), size * 1.5)
-    
     circle(surface, (135, 205, 222, transparency),
            (x + size * orientation * 2, y + size * 5), size * 4)
     circle(surface, (0, 0, 0, transparency),
            (x + size * orientation * 1, y + size * 5), size * 1.5)
 
-    #Draw diagonal ellipses on new surfaces
+    #Draw diagonal ellipses on new surfaces which will be rotated
     ellipse_surface = pygame.Surface((size * 3, size * 2), pygame.SRCALPHA)
     ellipse(ellipse_surface, (255, 255, 255, transparency),
-            (0, 0,
-             size * orientation * 3, size * 2))
+            (0, 0, size * orientation * 3, size * 2))
     ellipse_surface = pygame.transform.rotate(ellipse_surface, 30 * orientation)
     surface.blit(ellipse_surface, (x - size * orientation * 17, y + size * 7))
 
@@ -142,23 +131,48 @@ def ghost(x, y, size, transparency, orientation):
     surface.blit(ellipse_surface, (x, y + size * 2))
     
     screen.blit(surface, (0, 0))
-    
-house(50,350, 1, 255)
 
-#Cloud and repeat of some methods of house so they will appear before the cloud:
-ellipse(screen, (50, 50, 50), (100, 65, 300, 50))
-#It's easier to copy the the part not replacing x, y and size in it
-x = 50
-y = 350
-size = 1
-rect(screen, (26, 26, 26), (x + 60 * size, y - 280 * size,
-                                          20 * size, 65 * size))
+#Set up a main screen
+pygame.init()
+
+FPS = 30
+screen = pygame.display.set_mode((600, 800))
+
+#Backround
+rect(screen, (120, 120, 120), (0, 0, 600, 350))
+
+#Objects at the sky
+circle(screen, (255, 255, 255), (520, 80), 40)
+ellipse(screen, (40, 40, 40), (280, 200, 400, 50))
 ellipse(screen, (80, 80, 80), (250, 50, 300, 50))
-rect(screen, (26, 26, 26), (x + 260 * size, y - 270 * size,
-                                            10 * size, 50 * size))
+ellipse(screen, (50, 50, 50), (100, 65, 300, 50))
+ellipse(screen, (70, 70, 70), (210, 325, 420, 50))
+#ellipse(screen, (40, 40, 40), (-100, 400, 420, 50))
 
-#Ghost
-ghost(450, 580, 2, 255, 1)
+#Houses
+house(420, 280, 0.5, 128)
+house(240, 385, 0.5, 200)
+
+#Cloud between the houses
+ellipse(screen, (40, 40, 40), (-100, 400, 420, 50))
+
+house(30, 465, 0.5, 255)
+
+#Transparent cloud: we create a new surface for it and blit it with "screen"
+transparent_screen = pygame.Surface((600, 800), pygame.SRCALPHA)
+ellipse(transparent_screen, (50, 50, 50, 128), (280, 370, 360, 60))
+screen.blit(transparent_screen, (0, 0))
+
+#Cloud covering the right house from the above
+ellipse(screen, (70, 70, 70), (330, 110, 500, 50))
+
+#Ghosts
+ghost(470, 600, 1.5, 255, 1)
+ghost(420, 620, 0.9, 128, 1)
+ghost(530, 500, 0.9, 128, 1)
+ghost(550, 530, 0.9, 128, 1)
+ghost(90, 640, 0.9, 128, -1)
+ghost(130, 670, 0.9, 128, -1)
 
 pygame.display.update()
 clock = pygame.time.Clock()
