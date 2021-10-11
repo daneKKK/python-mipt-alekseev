@@ -1,6 +1,7 @@
 import pygame
 from pygame.draw import *
-from random import randint
+from random import randint, uniform
+import math
 pygame.init()
 
 
@@ -67,6 +68,44 @@ class Ball():
             self.y += 2 * (self.r - self.y)
             self.vy *= -1
 
+class Targeter():
+    '''
+    Objects of this class will spin around ball with speed depenging on a size
+    of a ball. 
+    '''
+    def __init__(self, ball):
+        '''
+        Creates targeter with random angle, radius from ball. It's speed
+        depends on size of a ball, the bigger - the faster.
+        TO DO: Set more interesting color
+        '''
+        self.angle = uniform(-math.pi, math.pi)
+        self.angleSpeed = uniform(-0.2 * ball.r ** 2 / 5000,
+                                  0.2 * ball.r ** 2 / 5000)
+        self.r = uniform(ball.r + 20, ball.r + 100)
+        self.rSpeed = uniform(0.1 * ball.r ** 2 / 1000,
+                              1 * ball.r ** 2 / 1000)
+        self.color = ball.color
+
+    def move(self):
+        '''
+        Updates angle and radius of targeter.
+        '''
+        self.angle += self.angleSpeed
+        self.r -= self.rSpeed
+
+    def draw(self, ball):
+        '''
+        Draws targeter.
+        TO DO: Set more interesting color.
+        '''
+        circle(screen, self.color, (ball.x + self.r * math.sin(self.angle),
+                                    ball.y + self.r * math.cos(self.angle)),
+               10)
+
+    def readyForDestruction(self, ball):
+        return self.r < ball.r
+
 class Crosshair():
     '''
     Crosshair objects. Gets drawn when click has been succesful.
@@ -109,10 +148,15 @@ N = 5 #Number of balls.
 
 score = 0
 
-ballObjects = [0]*N
+ballObjects = [0] * N
 for i in range(N):
     ballObjects[i] = Ball()
     ballObjects[i].draw()
+
+targeterObjects = [0] * N
+for i in range(N):
+    targeterObjects[i] = Targeter(ballObjects[i])
+    targeterObjects[i].draw(ballObjects[i])
     
 
 while not finished:
@@ -144,6 +188,14 @@ while not finished:
         i.move()
         i.stayOnScreen()
         i.draw()
+
+    for i in range(N):
+        targeterObjects[i].move()
+        targeterObjects[i].draw(ballObjects[i])
+        if targeterObjects[i].readyForDestruction(ballObjects[i]):
+            ballObjects[i] = Ball()
+            targeterObjects[i] = Targeter(ballObjects[i])
+        
 
     #Draws crosshair
     for i in crosshairObjects:
