@@ -50,9 +50,10 @@ class Ball():
         '''
         self.x += self.vx
         self.y += self.vy
-
-        
-        #Checks if ball is in screen. If not, brings it back.
+    def stayOnScreen(self):
+        '''
+        Checks if ball is in screen. If not, brings it back.
+        '''
         if self.x + self.r >= X_BORDER:
             self.x -= 2 * (self.x + self.r - X_BORDER)
             self.vx *= -1
@@ -139,9 +140,10 @@ while not finished:
                     break
 
     #Moves and draws balls
-    for i in range(N):
-        ballObjects[i].move()
-        ballObjects[i].draw()
+    for i in ballObjects:
+        i.move()
+        i.stayOnScreen()
+        i.draw()
 
     #Draws crosshair
     for i in crosshairObjects:
