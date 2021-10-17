@@ -277,7 +277,7 @@ while not finished:
             #Then checks if this click is succesful (if there was click on a
             #ball or on a tageter).
             #If yes:
-            #-Updates score (+1 for ball, +5 for targeter);
+            #-Updates score (+1 for ball, +3 for targeter);
             #-Creates new ball;
             #-Marks this frame as the one with succesful click;
             #-Breaks cycle
@@ -291,7 +291,7 @@ while not finished:
                     break
                 if targeterObjects[i].processClick(event):
                     clickedObjects.append(ClickedBall(ballObjects[i], FPS))
-                    score += 5
+                    score += 3
                     succesfullyClicked = True
                     ballObjects[i] = Ball()
                     break
