@@ -104,6 +104,7 @@ class Targeter():
         self.rSpeed = uniform(0.1 * ball.r ** 2 / 1000,
                               1 * ball.r ** 2 / 1000)
         self.x, self.y = ball.x, ball.y
+        self.width, self.height = 0, 0
         self.texture = ['squid1.png', 'squid2.png'][randint(0,1)]
 
     def move(self):
