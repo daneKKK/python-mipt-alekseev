@@ -1,7 +1,6 @@
-import pygame
+import pygame, math, os
 from pygame.draw import *
 from random import randint, uniform
-import math
 
 
 pygame.init()
@@ -30,14 +29,29 @@ class Ball():
         self.y = randint(100, 900)
         self.vx = randint(-10, 10)
         self.vy = randint(-10, 10)
-        self.r = randint(10, 100)
+        self.r = randint(20, 100)
         self.color = COLORS[randint(0,5)]
 
     def draw(self):
         '''
         Draws ball on the screen.
         '''
-        circle(screen, self.color, (self.x, self.y), self.r)
+        global hitboxEnabled
+        if hitboxEnabled:
+            circle(screen, self.color, (self.x, self.y), self.r)
+        face_path = os.path.join('resources', 'face.png')
+
+        texture_surface = pygame.image.load(face_path)
+        width = texture_surface.get_width()
+        height = texture_surface.get_height()
+        new_size = (self.r * 2,
+                    (self.r * 2 * 594) // 504)
+        texture_surface = pygame.transform.scale(texture_surface, new_size)
+        screen.blit(texture_surface, (self.x - self.r,
+                                      self.y - self.r / 2 - new_size[1] / 4))
+                
+        
+        
 
     def processClick(self, event):
         '''
@@ -82,8 +96,8 @@ class Targeter():
         TO DO: Set more interesting color
         '''
         self.angle = uniform(-math.pi, math.pi)
-        self.angleSpeed = uniform(-0.2 * ball.r ** 2 / 5000,
-                                  0.2 * ball.r ** 2 / 5000)
+        self.angleSpeed = uniform(-0.2 * ball.r / 500,
+                                  0.2 * ball.r / 500)
         self.r = uniform(ball.r + 20, ball.r + 100)
         self.rSpeed = uniform(0.1 * ball.r ** 2 / 1000,
                               1 * ball.r ** 2 / 1000)
@@ -180,14 +194,24 @@ X_BORDER = 1200
 Y_BORDER = 900
 screen = pygame.display.set_mode((X_BORDER, Y_BORDER))
 
+#Setting up a path to game directory
+dir_path = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/')
+resources_path = dir_path + '/resources'
+print(resources_path)
+
+#Setting up a pygame mainloop
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
 
-N = 5 #Number of balls.
+#Settings
+hitboxEnabled = False
+
+N = 5 #Number of balls
 
 score = 0
 
+#Arrays for balls, targeters and clicked balls.
 ballObjects = [0] * N
 for i in range(N):
     ballObjects[i] = Ball()
@@ -198,8 +222,9 @@ for i in range(N):
     targeterObjects[i] = Targeter(ballObjects[i])
     targeterObjects[i].draw(ballObjects[i])
 
-clickedObjects = [] #Array of clicked objects
+clickedObjects = []
 
+#Main loop
 while not finished:
     clock.tick(FPS)
     succesfullyClicked = False
