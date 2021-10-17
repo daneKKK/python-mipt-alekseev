@@ -2,8 +2,9 @@ import pygame
 from pygame.draw import *
 from random import randint, uniform
 import math
-pygame.init()
 
+
+pygame.init()
 
 #We create a list of colors out of which color for new ball will be randomly
 #chosen.
@@ -87,6 +88,7 @@ class Targeter():
         self.rSpeed = uniform(0.1 * ball.r ** 2 / 1000,
                               1 * ball.r ** 2 / 1000)
         self.color = ball.color
+        self.x, self.y = ball.x, ball.y
 
     def move(self):
         '''
@@ -209,14 +211,23 @@ while not finished:
             #Checks if event is mouse click and if there was no succesful
             #click already in this frame.
             #Then checks if this click is succesful (if there was click on a
-            #ball).
-            #If yes, updates score, creates new ball, marks this frame
-            #as the one with succesful click breaks cycle and creates
-            #crosshair.
+            #ball or on a tageter).
+            #If yes:
+            #-Updates score (+1 for ball, +5 for targeter);
+            #-Creates new ball;
+            #-Marks this frame as the one with succesful click;
+            #-Breaks cycle
+            #-Creates "clicked ball" (object of ClickedBall class).
             for i in range(len(ballObjects)):
                 if ballObjects[i].processClick(event):
                     clickedObjects.append(ClickedBall(ballObjects[i], FPS))
                     score += 1
+                    succesfullyClicked = True
+                    ballObjects[i] = Ball()
+                    break
+                if targeterObjects[i].processClick(event):
+                    clickedObjects.append(ClickedBall(ballObjects[i], FPS))
+                    score += 5
                     succesfullyClicked = True
                     ballObjects[i] = Ball()
                     break
