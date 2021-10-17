@@ -30,22 +30,23 @@ class Ball():
         self.vx = randint(-10, 10)
         self.vy = randint(-10, 10)
         self.r = randint(20, 100)
-        self.color = COLORS[randint(0,5)]
 
     def draw(self):
         '''
-        Draws ball on the screen.
+        Draws ball on the screen. Uses resources/face.png
         '''
         global hitboxEnabled
         if hitboxEnabled:
-            circle(screen, self.color, (self.x, self.y), self.r)
+            circle(screen, (255, 255, 255), (self.x, self.y), self.r)
         face_path = os.path.join('resources', 'face.png')
 
         texture_surface = pygame.image.load(face_path)
+
         width = texture_surface.get_width()
         height = texture_surface.get_height()
         new_size = (self.r * 2,
                     (self.r * 2 * 594) // 504)
+
         texture_surface = pygame.transform.scale(texture_surface, new_size)
         screen.blit(texture_surface, (self.x - self.r,
                                       self.y - self.r / 2 - new_size[1] / 4))
@@ -89,6 +90,7 @@ class Targeter():
     Objects of this class will spin around ball with speed depenging on a size
     of a ball. 
     '''
+
     def __init__(self, ball):
         '''
         Creates targeter with random angle, radius from ball. It's speed
@@ -98,11 +100,11 @@ class Targeter():
         self.angle = uniform(-math.pi, math.pi)
         self.angleSpeed = uniform(-0.2 * ball.r / 500,
                                   0.2 * ball.r / 500)
-        self.r = uniform(ball.r + 20, ball.r + 100)
+        self.r = randint(ball.r + 20, ball.r + 100)
         self.rSpeed = uniform(0.1 * ball.r ** 2 / 1000,
                               1 * ball.r ** 2 / 1000)
-        self.color = ball.color
         self.x, self.y = ball.x, ball.y
+        self.texture = ['squid1.png', 'squid2.png'][randint(0,1)]
 
     def move(self):
         '''
@@ -117,10 +119,30 @@ class Targeter():
         ball - connected ball.
         '''
         self.x, self.y = ball.x, ball.y
-        
-        circle(screen, self.color, (self.x + self.r * math.sin(self.angle),
-                                    self.y + self.r * math.cos(self.angle)),
-               10)
+        #if hitboxEnabled:
+        #    rect(screen, (255, 255, 255), (self.x + self.r * math.sin(self.angle),
+        #                                self.y + self.r * math.cos(self.angle)),
+        #           10)
+        texture_path = os.path.join('resources', self.texture)
+
+        texture_surface = pygame.image.load(texture_path)
+
+        width = texture_surface.get_width() // 2
+        height = texture_surface.get_height() // 2
+        self.width = width
+        self.height = height
+        new_size = (width, height)
+
+        if hitboxEnabled:
+            rect(screen, (255, 255, 255), (self.x + self.r * math.sin(self.angle) - width / 2,
+                                        self.y + self.r * math.cos(self.angle) - height / 2,
+                                           width, height)
+                   )
+
+        texture_surface = pygame.transform.scale(texture_surface, new_size)
+        screen.blit(texture_surface, (self.x  + self.r * math.sin(self.angle) - width / 2,
+                                      self.y + self.r * math.cos(self.angle) - height / 2))
+         
 
     def readyForDestruction(self, ball):
         '''
@@ -135,9 +157,15 @@ class Targeter():
         Checks if position of click is in targeter
         '''
         x, y = event.pos
-        distance = (self.x + self.r * math.sin(self.angle) - x) ** 2
-        distance += (self.y + self.r * math.cos(self.angle) - y) ** 2
-        return distance < 100
+        isOnXAxis = (x >= self.x + self.r * math.sin(self.angle) - self.width / 2
+                     and x <= self.x + self.r * math.sin(self.angle) + self.width / 2
+                     )
+        isOnYAxis = (y >= self.y + self.r * math.cos(self.angle) - self.height / 2
+                     and y <= self.y + self.r * math.cos(self.angle) + self.height / 2
+                     )
+        
+        
+        return isOnXAxis and isOnYAxis
 
 class ClickedBall():
     '''
@@ -161,12 +189,22 @@ class ClickedBall():
         
     def draw(self):
         '''
-        Draws ClickedBall.
+        Draws ClickedBall. Uses resources/face_clicked.png
         '''
-        rect(screen, (255, 255, 255), (self.x - 2, self.y - 12,
-                                       4, 24))
-        rect(screen, (255, 255, 255), (self.x - 12, self.y - 2,
-                                       24, 4))
+        
+        face_path = os.path.join('resources', 'face_clicked.png')
+
+        texture_surface = pygame.image.load(face_path)
+
+        width = texture_surface.get_width()
+        height = texture_surface.get_height()
+        new_size = (self.r * 2,
+                    (self.r * 2 * 594) // 504)
+
+        texture_surface = pygame.transform.scale(texture_surface, new_size)
+        screen.blit(texture_surface, (self.x - self.r,
+                                      self.y - self.r / 2 - new_size[1] / 4))
+         
 
     def isAlive(self):
         '''
@@ -205,7 +243,7 @@ clock = pygame.time.Clock()
 finished = False
 
 #Settings
-hitboxEnabled = False
+hitboxEnabled = False #Determines whether game should draw hitboxes
 
 N = 5 #Number of balls
 
