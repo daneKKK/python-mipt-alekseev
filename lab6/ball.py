@@ -51,6 +51,7 @@ class Ball():
         '''
         self.x += self.vx
         self.y += self.vy
+
     def stayOnScreen(self):
         '''
         Checks if ball is in screen. If not, brings it back.
@@ -97,33 +98,70 @@ class Targeter():
     def draw(self, ball):
         '''
         Draws targeter.
-        TO DO: Set more interesting color.
+        ball - connected ball.
         '''
-        circle(screen, self.color, (ball.x + self.r * math.sin(self.angle),
-                                    ball.y + self.r * math.cos(self.angle)),
+        self.x, self.y = ball.x, ball.y
+        
+        circle(screen, self.color, (self.x + self.r * math.sin(self.angle),
+                                    self.y + self.r * math.cos(self.angle)),
                10)
 
     def readyForDestruction(self, ball):
+        '''
+        Checks whether connected ball can be destroyed comparing it's radius
+        with targeter radius.
+        ball - connected ball.
+        '''
         return self.r < ball.r
 
-class Crosshair():
-    '''
-    Crosshair objects. Gets drawn when click has been succesful.
-    '''
-    def __init__(self, event):
+    def processClick(self, event):
         '''
-        Creates crosshair objects in position of a click.
+        Checks if position of click is in targeter
         '''
-        self.x, self.y = event.pos
+        x, y = event.pos
+        distance = (self.x + self.r * math.sin(self.angle) - x) ** 2
+        distance += (self.y + self.r * math.cos(self.angle) - y) ** 2
+        return distance < 100
+
+class ClickedBall():
+    '''
+    Gets drawn when click on the ball has been succesful at the same place
+    as the ball. It only gets drawn 10 times before destruction.
+    '''
+    
+    
+    def __init__(self, ball, FPS):
+        '''
+        Creates object in position of a ball with the same radius as the
+        ball.
+        ball - the clicked ball;
+        FPS - FPS of the mainloop.
+        '''
+        self.x, self.y = ball.x, ball.y
+        self.r = ball.r
+
+        #Time to live is for how many frames will ClickedBall be drawn.
+        self.timeToLive = FPS // 3
         
     def draw(self):
         '''
-        Draws crosshair.
+        Draws ClickedBall.
         '''
         rect(screen, (255, 255, 255), (self.x - 2, self.y - 12,
                                        4, 24))
         rect(screen, (255, 255, 255), (self.x - 12, self.y - 2,
                                        24, 4))
+
+    def isAlive(self):
+        '''
+        Checks whether ball can be drawn again. If yes, reduces it's timer
+        of being drawn by 1 and returns True; returns False otherwise.
+        '''
+        if self.timeToLive > 0:
+            self.timeToLive -= 1
+            return True
+        else:
+            return False
 
 def drawScore():
     '''
@@ -157,12 +195,12 @@ targeterObjects = [0] * N
 for i in range(N):
     targeterObjects[i] = Targeter(ballObjects[i])
     targeterObjects[i].draw(ballObjects[i])
-    
+
+clickedObjects = [] #Array of clicked objects
 
 while not finished:
     clock.tick(FPS)
     succesfullyClicked = False
-    crosshairObjects = [] #Array of crosshair objects
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -177,7 +215,7 @@ while not finished:
             #crosshair.
             for i in range(len(ballObjects)):
                 if ballObjects[i].processClick(event):
-                    crosshairObjects.append(Crosshair(event))
+                    clickedObjects.append(ClickedBall(ballObjects[i], FPS))
                     score += 1
                     succesfullyClicked = True
                     ballObjects[i] = Ball()
@@ -198,8 +236,10 @@ while not finished:
         
 
     #Draws crosshair
-    for i in crosshairObjects:
+    for i in clickedObjects:
         i.draw()
+        if not i.isAlive():
+            clickedObjects.remove(i)
 
     #Draws score
     drawScore()
