@@ -1,4 +1,4 @@
-import pygame, math, os
+import pygame, math, os, json
 from pygame.draw import *
 from random import randint, uniform
 
@@ -120,10 +120,7 @@ class Targeter():
         ball - connected ball.
         '''
         self.x, self.y = ball.x, ball.y
-        #if hitboxEnabled:
-        #    rect(screen, (255, 255, 255), (self.x + self.r * math.sin(self.angle),
-        #                                self.y + self.r * math.cos(self.angle)),
-        #           10)
+        
         texture_path = os.path.join('resources', self.texture)
 
         texture_surface = pygame.image.load(texture_path)
@@ -227,6 +224,24 @@ def drawScore():
     textSurface = myFont.render('Score: ' + str(score), False, (255, 255, 255))
     screen.blit(textSurface, (0, 10))
 
+def saveData(name):
+    '''
+    Saves data to leaderboard.json
+    name - name that will be written in file
+    score - score that will be written in file
+    '''
+    global score
+    data = {}
+    try:
+        with open('leaderboard.json') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+    data[name] = score
+    with open('leaderboard.json', 'w') as f:
+        json.dump(data, f)
+
+
 #Setting up a screen
 FPS = 30
 X_BORDER = 1200
@@ -245,9 +260,9 @@ finished = False
 
 #Settings
 hitboxEnabled = False #Determines whether game should draw hitboxes
-
 N = 5 #Number of balls
 
+#Set a score
 score = 0
 
 #Arrays for balls, targeters and clicked balls.
@@ -295,6 +310,9 @@ while not finished:
                     succesfullyClicked = True
                     ballObjects[i] = Ball()
                     break
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                saveData(input('Input name\n'))
 
     #Moves and draws balls
     for i in ballObjects:
@@ -302,9 +320,12 @@ while not finished:
         i.stayOnScreen()
         i.draw()
 
+    #Moves and draws targeters; destroys ball and targeter if targeter is in
+    #radius of a connected ball
     for i in range(N):
         targeterObjects[i].move()
         targeterObjects[i].draw(ballObjects[i])
+
         if targeterObjects[i].readyForDestruction(ballObjects[i]):
             ballObjects[i] = Ball()
             targeterObjects[i] = Targeter(ballObjects[i])
