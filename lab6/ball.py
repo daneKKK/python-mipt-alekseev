@@ -391,13 +391,15 @@ def settingsLoop():
     Settings menu
     '''
 
-
     def drawSettings():
         '''
         Draw text
         '''
         global hitboxEnabled
         def drawHitboxOption():
+            '''
+            Draws text for hitbox option in settings menu
+            '''
             pygame.font.init()
             myFont = pygame.font.SysFont('Comic Sans MS', 29)
             textSurface = myFont.render('Рисовать хитбоксы', False, (255, 255, 255))
@@ -406,6 +408,9 @@ def settingsLoop():
                                       (Y_BORDER // 2) - 100))
 
         def drawHitboxValue():
+            '''
+            Draws value of hitboxEnabled in settings menu
+            '''
             global hitboxEnabled
             pygame.font.init()
             myFont = pygame.font.SysFont('Comic Sans MS', 29)
@@ -414,12 +419,15 @@ def settingsLoop():
             screen.blit(textSurface, ((X_BORDER // 2) - (width // 2) + 200,
                                       (Y_BORDER // 2) - 100))
 
-
+        #Calling functions to draw text
         drawHitboxOption()
         drawHitboxValue()
 
     def processClick(event):
-
+        '''
+        Checkes whether click was on value of hitboxEnabled
+        event - event of click
+        '''
         global hitboxEnabled
         
         x, y = event.pos
@@ -442,6 +450,7 @@ def settingsLoop():
     
     settingsFinished = False
 
+    #Settings Loop
     while not settingsFinished:
         clock.tick(FPS)
 
@@ -455,7 +464,8 @@ def settingsLoop():
                 if event.key == pygame.K_ESCAPE:
                     settingsFinished == True
                     return
-
+                
+        #Draw settings text
         drawSettings()
         
         pygame.display.update()
