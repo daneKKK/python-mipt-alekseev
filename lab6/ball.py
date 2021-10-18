@@ -339,7 +339,7 @@ def menuLoop():
         #Processing Обучение button
         if (y >= (Y_BORDER // 2) + 20 and
             y <= (Y_BORDER // 2) + 59):
-            #TO-DO: TUTORIAL
+            tutorialLoop()
             return
 
         #Processing Выход button
@@ -471,7 +471,73 @@ def settingsLoop():
         pygame.display.update()
 
         screen.fill((0, 0, 0))
+    
+def tutorialLoop():
+    def drawTutorial():
+        '''
+        Draws all the text of tutorial
+        '''
+        def drawTextTutorial():
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 40)
+            textSurface = myFont.render('Обучение', False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                      (Y_BORDER // 2) - 180))
 
+        
+        def drawText(text, height):
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 29)
+            textSurface = myFont.render(text, False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - 400,
+                                      (Y_BORDER // 2) - 120 + height))
+
+        drawTextTutorial()
+        
+        textArray = ['Цель игры:',
+                     '  Спасите Сон Ки Хунов от нападающих на на них кальмаров!',
+                     ' Нажимайте на них и получайте очки (+1 за Сон Ки Хуна,',
+                     ' +3 за кальмара)',
+                     'Управление:',
+                     '  S - выйти и сохранить результат, имя записывается в ' +
+                     'консоли;',
+                     '  ESC - выйти в меню.']
+
+        for i in range(len(textArray)):
+            drawText(textArray[i], i * 40)
+
+        
+        
+        
+    global FPS
+    global clock
+    global finished
+    global screen
+    
+    tutorialFinished = False
+
+    #Tutorial Loop
+    while not tutorialFinished:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    tutorialFinished == True
+                    return
+                
+        #Draw settings text
+        drawTutorial()
+        
+        pygame.display.update()
+
+        screen.fill((0, 0, 0))
+    
 
 #Setting up a screen
 FPS = 30
