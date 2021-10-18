@@ -235,6 +235,73 @@ def menuLoop():
     '''
     Function that will show game menu.
     '''
+    def drawMenu():
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 40)
+        textSurface = myFont.render('Меню', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) - 180))
+
+
+    def drawLeaderboardMenu():
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        textSurface = myFont.render('Таблица лидеров', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) - 20))
+
+        #253 - width
+        
+    def drawSettingsMenu():
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        textSurface = myFont.render('Настройки', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) - 60))
+
+        #154 - width
+
+    def drawTutorialMenu():
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        textSurface = myFont.render('Обучение', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) + 20))
+
+        #140 - width, 43 - height
+
+    def drawQuitMenu():
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        textSurface = myFont.render('Выход', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) + 60))
+
+        #97 - width
+
+    def drawContinueMenu():
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        textSurface = myFont.render('Продолжить', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) - 100))
+
+        #184 - width
+
+    #def processClick(event):
+    #    x, y = event.pos
+
+    #    global menuFinished
+    #    global finished
+
+    #    if x 
+
     global FPS
     global clock
     global finished
@@ -249,13 +316,27 @@ def menuLoop():
             if event.type == pygame.QUIT:
                 finished = True
                 return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                print('Click!')
+                #TO-DO: handle clicks on menu options
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     finished == True
                     return
 
-        rect(screen, (255, 255, 255), (400, 400, 100, 100))
+        #TO-DO: menu options
+                #Настройки: draw hitboxes; number of balls
+                #Таблица лидеров: show leaderboard
+                #Обучение: rules of the game
+                #Выход: quit from game
+        drawMenu()
 
+        drawContinueMenu()
+        drawSettingsMenu()
+        drawLeaderboardMenu()
+        drawTutorialMenu()
+        drawQuitMenu()
+        
         pygame.display.update()
 
 #Setting up a screen
@@ -359,6 +440,6 @@ while not finished:
 
     
     pygame.display.update()
-    screen.fill(BLACK)
+    screen.fill((0, 0, 0))
 
 pygame.quit()
