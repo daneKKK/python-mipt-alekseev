@@ -5,16 +5,6 @@ from random import randint, uniform
 
 pygame.init()
 
-#We create a list of colors out of which color for new ball will be randomly
-#chosen.
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
-GREEN = (0, 255, 0)
-MAGENTA = (255, 0, 255)
-CYAN = (0, 255, 255)
-BLACK = (0, 0, 0)
-COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 
 class Ball():
@@ -241,6 +231,32 @@ def saveData(name):
     with open('leaderboard.json', 'w') as f:
         json.dump(data, f)
 
+def menuLoop():
+    '''
+    Function that will show game menu.
+    '''
+    global FPS
+    global clock
+    global finished
+    global screen
+    
+    menuFinished = False
+
+    while not menuFinished:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    finished == True
+                    return
+
+        rect(screen, (255, 255, 255), (400, 400, 100, 100))
+
+        pygame.display.update()
 
 #Setting up a screen
 FPS = 30
@@ -285,7 +301,7 @@ while not finished:
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            finished = True
+            menuLoop()
         elif event.type == pygame.MOUSEBUTTONDOWN and not succesfullyClicked:
             #Checks if event is mouse click and if there was no succesful
             #click already in this frame.
@@ -313,7 +329,8 @@ while not finished:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:
                 saveData(input('Input name\n'))
-
+            elif event.key == pygame.K_ESCAPE:
+                menuLoop()
     #Moves and draws balls
     for i in ballObjects:
         i.move()
