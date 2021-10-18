@@ -246,7 +246,7 @@ def menuLoop():
 
     def drawLeaderboardMenu():
         pygame.font.init()
-        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
         textSurface = myFont.render('Таблица лидеров', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
@@ -256,7 +256,7 @@ def menuLoop():
         
     def drawSettingsMenu():
         pygame.font.init()
-        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
         textSurface = myFont.render('Настройки', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
@@ -266,7 +266,7 @@ def menuLoop():
 
     def drawTutorialMenu():
         pygame.font.init()
-        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
         textSurface = myFont.render('Обучение', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
@@ -276,7 +276,7 @@ def menuLoop():
 
     def drawQuitMenu():
         pygame.font.init()
-        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
         textSurface = myFont.render('Выход', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
@@ -286,7 +286,7 @@ def menuLoop():
 
     def drawContinueMenu():
         pygame.font.init()
-        myFont = pygame.font.SysFont('Comic Sans MS', 30)
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
         textSurface = myFont.render('Продолжить', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
@@ -294,13 +294,47 @@ def menuLoop():
 
         #184 - width
 
-    #def processClick(event):
-    #    x, y = event.pos
+    def processClick(event):
+        x, y = event.pos
 
-    #    global menuFinished
-    #    global finished
+        nonlocal menuFinished
+        global finished
 
-    #    if x 
+        isOnXAxis = False
+        isOnYAxis = False
+        
+        if  not (x >= (X_BORDER // 2) - (184 // 2) and
+            x <= (X_BORDER // 2) + (184 // 2)):
+            return
+
+        #Processing Продолжить button
+        if (y >= (Y_BORDER // 2) - 100 and
+            y <= (Y_BORDER // 2) - 61 ):
+            menuFinished = True
+            return
+
+        if (y >= (Y_BORDER // 2) - 60 and
+            y <= (Y_BORDER // 2) - 21):
+            print('Settings!')
+            return
+
+        if (y >= (Y_BORDER // 2) - 20 and
+            y <= (Y_BORDER // 2) + 19):
+            print('Leaderboard!')
+            return
+
+        if (y >= (Y_BORDER // 2) + 20 and
+            y <= (Y_BORDER // 2) + 59):
+            print('Tutorial!')
+            return
+
+        if (y >= (Y_BORDER // 2) + 60 and
+            y <= (Y_BORDER // 2) + 99):
+            finished = True
+            menuFinished = True
+            return
+            
+        
 
     global FPS
     global clock
@@ -317,7 +351,7 @@ def menuLoop():
                 finished = True
                 return
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                print('Click!')
+                processClick(event)
                 #TO-DO: handle clicks on menu options
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
