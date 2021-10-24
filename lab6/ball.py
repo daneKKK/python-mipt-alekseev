@@ -233,6 +233,15 @@ def drawScore():
     textSurface = myFont.render('Score: ' + str(score), False, (255, 255, 255))
     screen.blit(textSurface, (0, 10))
 
+def drawEscapeText():
+    '''
+    Draws text ESC - меню
+    '''
+    pygame.font.init()
+    myFont = pygame.font.SysFont('Comic Sans MS', 30)
+    textSurface = myFont.render('ESC - меню', False, (255, 255, 255))
+    screen.blit(textSurface, (0, 40))
+
 def saveData(name):
     '''
     Saves data to leaderboard.json
@@ -810,6 +819,7 @@ while not finished:
 
     #Draws score
     drawScore()
+    drawEscapeText()
 
     
     pygame.display.update()
