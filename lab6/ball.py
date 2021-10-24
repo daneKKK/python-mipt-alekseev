@@ -333,7 +333,7 @@ def menuLoop():
         #Processing Таблица лидеров button
         if (y >= (Y_BORDER // 2) - 20 and
             y <= (Y_BORDER // 2) + 19):
-            #TO-DO: LEADERBOARD
+            leaderboardLoop()
             return
 
         #Processing Обучение button
@@ -473,6 +473,9 @@ def settingsLoop():
         screen.fill((0, 0, 0))
     
 def tutorialLoop():
+    '''
+    Starts the tutorial menu.
+    '''
     def drawTutorial():
         '''
         Draws all the text of tutorial
@@ -538,6 +541,21 @@ def tutorialLoop():
 
         screen.fill((0, 0, 0))
     
+def leaderboardLoop():
+    '''
+    Leaderboard menu
+    '''
+    try:
+        with open('leaderboard.json') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+
+    for w in sorted(data, key=data.get, reverse=True):
+        print(w, data[w])
+
+    return
+
 
 #Setting up a screen
 FPS = 30
