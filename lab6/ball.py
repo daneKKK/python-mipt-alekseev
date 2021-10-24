@@ -481,6 +481,9 @@ def tutorialLoop():
         Draws all the text of tutorial
         '''
         def drawTextTutorial():
+            '''
+            Draws Обучение
+            '''
             pygame.font.init()
             myFont = pygame.font.SysFont('Comic Sans MS', 40)
             textSurface = myFont.render('Обучение', False, (255, 255, 255))
@@ -490,6 +493,12 @@ def tutorialLoop():
 
         
         def drawText(text, height):
+            '''
+            Draws given text at the given height relative to
+            y = (Y_BORDER // 2) - 120
+            text - given text;
+            height - given height.
+            '''
             pygame.font.init()
             myFont = pygame.font.SysFont('Comic Sans MS', 29)
             textSurface = myFont.render(text, False, (255, 255, 255))
@@ -545,16 +554,98 @@ def leaderboardLoop():
     '''
     Leaderboard menu
     '''
+    def drawLeaderboard():
+        '''
+        Draw text for leaderboard
+        '''
+
+        def drawTextLeaderboard():
+            '''
+            Draws Таблица лидеров
+            '''
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 40)
+            textSurface = myFont.render('Таблица лидеров', False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                      (Y_BORDER // 2) - 180))
+
+        def drawName(number, name, height):
+            '''
+            Draws given name and number in leaderboard at the left part
+            of the screen at the given height relative to
+            y = (Y_BORDER // 2) - 120.
+            text - given text;
+            height - given height.
+            '''
+            text = str(number) + '. ' + str(name)
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 29)
+            textSurface = myFont.render(text, False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - 500,
+                                      (Y_BORDER // 2) - 120 + height))
+            
+        def drawScore(score, height):
+            '''
+            Draws given name and number in leaderboard at the left part
+            of the screen at the given height relative to
+            y = (Y_BORDER // 2) - 120.
+            text - given text;
+            height - given height.
+            '''
+            text = str(score) + ' pts.'
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 29)
+            textSurface = myFont.render(text, False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - (width // 2) + 400,
+                                      (Y_BORDER // 2) - 120 + height))
+        
+        nonlocal data
+
+        drawTextLeaderboard()
+
+        number = 1
+        
+        for w in sorted(data, key=data.get, reverse=True):
+            drawName(number, w, number * 40)
+            drawScore(data[w], number * 40)
+            number +=1
+            if number >= 10:
+                break
+        
+                
+        pass
+    
     try:
         with open('leaderboard.json') as f:
             data = json.load(f)
     except FileNotFoundError:
         data = {}
 
-    for w in sorted(data, key=data.get, reverse=True):
-        print(w, data[w])
 
-    return
+    leaderboardFinished = False
+    
+    #Leaderboard loop
+    while not leaderboardFinished:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    leaderboardFinished == True
+                    return
+                
+        #Draw leaderboard text
+        drawLeaderboard()
+        
+        pygame.display.update()
+
+        screen.fill((0, 0, 0))
 
 
 #Setting up a screen
