@@ -254,7 +254,6 @@ def saveData(name):
             data = json.load(f)
     except FileNotFoundError:
         data = {}
-
     if name in data:
         print('Вы уверены, что хотите сохранить очки под этим именем? \n')
         if int(data[name]) > score:
@@ -793,6 +792,12 @@ while not finished:
         i.stayOnScreen()
         i.draw()
 
+    #Draws Destroyed Balls
+    for i in destroyedObjects:
+        i.draw()
+        if not i.isAlive():
+            destroyedObjects.remove(i)
+
     #Moves and draws targeters; destroys ball and targeter and creates
     #destroyed ball object if targeter is in radius of a connected ball
     for i in range(N):
@@ -810,12 +815,6 @@ while not finished:
         i.draw()
         if not i.isAlive():
             clickedObjects.remove(i)
-
-    #Draws Destroyed Balls
-    for i in destroyedObjects:
-        i.draw()
-        if not i.isAlive():
-            destroyedObjects.remove(i)
 
     #Draws score
     drawScore()
