@@ -226,6 +226,17 @@ def saveData(name):
             data = json.load(f)
     except FileNotFoundError:
         data = {}
+
+    if data[name] != None:
+        print('Вы уверены, что хотите сохранить очки под этим именем? \n')
+        if int(data[name]) > score:
+            print('Если вы впишете очки под этим именем, то понизите рекорд.\n')
+        print('Если Вы уверены, то введите Y. Иначе данные не сохранятся\n')
+        print('Сохранить данные?')
+        answer = input()
+        if answer != 'Y':
+            return
+        
     data[name] = score
     with open('leaderboard.json', 'w') as f:
         json.dump(data, f)
@@ -289,6 +300,16 @@ def menuLoop():
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                   (Y_BORDER // 2) + 60))
 
+    def drawQuitAndSaveMenu():
+        '''
+        Draws text "Выйти"
+        '''
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
+        textSurface = myFont.render('Выйти и сохранить', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) + 100))
     def drawContinueMenu():
         '''
         Draws text "Продолжить"
@@ -309,13 +330,14 @@ def menuLoop():
 
         nonlocal menuFinished
         global finished
+        global doASave
 
         isOnXAxis = False
         isOnYAxis = False
 
         #Processing X position of click
-        if  not (x >= (X_BORDER // 2) - (184 // 2) and
-            x <= (X_BORDER // 2) + (184 // 2)):
+        if  not (x >= (X_BORDER // 2) - (270 // 2) and
+            x <= (X_BORDER // 2) + (270 // 2)):
             return
 
         #Processing Продолжить button
@@ -347,6 +369,14 @@ def menuLoop():
             y <= (Y_BORDER // 2) + 99):
             finished = True
             menuFinished = True
+            return
+
+        #Processing Выйти и сохранить
+        if (y >= (Y_BORDER // 2) + 100 and
+            y <= (Y_BORDER // 2) + 139):
+            finished = True
+            menuFinished = True
+            doASave = True
             return
             
         
@@ -381,6 +411,7 @@ def menuLoop():
         drawLeaderboardMenu()
         drawTutorialMenu()
         drawQuitMenu()
+        drawQuitAndSaveMenu()
         
         pygame.display.update()
 
@@ -513,8 +544,6 @@ def tutorialLoop():
                      ' Нажимайте на них и получайте очки (+1 за Сон Ки Хуна,',
                      ' +3 за кальмара)',
                      'Управление:',
-                     '  S - выйти и сохранить результат, имя записывается в ' +
-                     'консоли;',
                      '  ESC - выйти в меню.']
 
         for i in range(len(textArray)):
@@ -588,7 +617,7 @@ def leaderboardLoop():
             
         def drawScore(score, height):
             '''
-            Draws given name and number in leaderboard at the left part
+            Draws given score in leaderboard at the right part
             of the screen at the given height relative to
             y = (Y_BORDER // 2) - 120.
             text - given text;
@@ -615,8 +644,6 @@ def leaderboardLoop():
             if number >= 10:
                 break
         
-                
-        pass
     
     try:
         with open('leaderboard.json') as f:
@@ -718,10 +745,7 @@ while not finished:
                     ballObjects[i] = Ball()
                     break
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_s:
-                doASave = True
-                finished = True
-            elif event.key == pygame.K_ESCAPE:
+            if event.key == pygame.K_ESCAPE:
                 menuLoop()
     #Moves and draws balls
     for i in ballObjects:
@@ -758,4 +782,4 @@ pygame.quit()
 
 #Saving data
 if doASave:
-    saveData(input('Input name\n'))
+    saveData(input('Введите имя\n'))
