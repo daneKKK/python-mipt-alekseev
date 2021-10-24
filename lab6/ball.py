@@ -205,6 +205,25 @@ class ClickedBall():
         else:
             return False
 
+class DestroyedBall(ClickedBall):
+    def draw(self):
+        '''
+        Draws DestroyedBall. Uses resources/face_destroyed.png
+        '''
+        
+        face_path = os.path.join('resources', 'face_destroyed.png')
+
+        texture_surface = pygame.image.load(face_path)
+
+        width = texture_surface.get_width()
+        height = texture_surface.get_height()
+        new_size = (self.r * 2,
+                    (self.r * 2 * height) // width)
+
+        texture_surface = pygame.transform.scale(texture_surface, new_size)
+        screen.blit(texture_surface, (self.x - self.r,
+                                      self.y - self.r / 2 - new_size[1] / 4))
+
 def drawScore():
     '''
     Draws score. Takes score as global variable.
@@ -227,7 +246,7 @@ def saveData(name):
     except FileNotFoundError:
         data = {}
 
-    if data[name] != None:
+    if name in data:
         print('Вы уверены, что хотите сохранить очки под этим именем? \n')
         if int(data[name]) > score:
             print('Если вы впишете очки под этим именем, то понизите рекорд.\n')
@@ -412,10 +431,11 @@ def menuLoop():
         drawTutorialMenu()
         drawQuitMenu()
         drawQuitAndSaveMenu()
-        
+
         pygame.display.update()
 
         screen.fill((0, 0, 0))
+        drawBackground()
 
 def settingsLoop():
     '''
@@ -641,7 +661,7 @@ def leaderboardLoop():
             drawName(number, w, number * 40)
             drawScore(data[w], number * 40)
             number +=1
-            if number >= 10:
+            if number > 10:
                 break
         
     
@@ -674,6 +694,15 @@ def leaderboardLoop():
 
         screen.fill((0, 0, 0))
 
+def drawBackground():
+    '''
+    Draws menu background. Used resources/background.png
+    '''
+    global screen
+    
+    background_path = os.path.join('resources', 'background.png')
+    background_surface = pygame.image.load(background_path)
+    screen.blit(background_surface, (0,0))
 
 #Setting up a screen
 FPS = 30
@@ -711,6 +740,8 @@ for i in range(N):
     targeterObjects[i].draw(ballObjects[i])
 
 clickedObjects = []
+
+destroyedObjects = []
 
 #Main loop
 while not finished:
@@ -753,22 +784,29 @@ while not finished:
         i.stayOnScreen()
         i.draw()
 
-    #Moves and draws targeters; destroys ball and targeter if targeter is in
-    #radius of a connected ball
+    #Moves and draws targeters; destroys ball and targeter and creates
+    #destroyed ball object if targeter is in radius of a connected ball
     for i in range(N):
         targeterObjects[i].move()
         targeterObjects[i].draw(ballObjects[i])
 
         if targeterObjects[i].readyForDestruction(ballObjects[i]):
+            destroyedObjects.append(DestroyedBall(ballObjects[i], FPS))
             ballObjects[i] = Ball()
             targeterObjects[i] = Targeter(ballObjects[i])
         
 
-    #Draws crosshair
+    #Draws Clicked Balls
     for i in clickedObjects:
         i.draw()
         if not i.isAlive():
             clickedObjects.remove(i)
+
+    #Draws Destroyed Balls
+    for i in destroyedObjects:
+        i.draw()
+        if not i.isAlive():
+            destroyedObjects.remove(i)
 
     #Draws score
     drawScore()
@@ -777,6 +815,7 @@ while not finished:
     pygame.display.update()
 
     screen.fill((0, 0, 0))
+    drawBackground()
 
 pygame.quit()
 
