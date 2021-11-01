@@ -123,8 +123,9 @@ class Gun:
         Происходит при отпускании кнопки мыши.
         Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
         """
-        global balls, bullet
-        bullet += 1
+        global balls, bullet, countBullets
+        if countBullets:
+            bullet += 1
         new_ball = Ball(self.screen)
         new_ball.r += 5
         self.an = math.atan2((event.pos[1]-new_ball.y), (event.pos[0]-new_ball.x))
@@ -241,6 +242,7 @@ numberOfTargets = 2
 targets = [Target(screen) for i in range(numberOfTargets)]
 score = 0
 levelTimer = 4 * FPS
+countBullets = True
 
 ax = 0
 ay = 1.5
@@ -255,10 +257,12 @@ while not finished:
         startText()
         if levelTimer > 0:
             levelTimer -= 1
+            countBullets = False
         else:
             levelTimer = 4 * FPS
             targets = [Target(screen) for i in range(numberOfTargets)]
             bullet = 0
+            countBullets = True
     
     drawScore()
     gun.draw()
