@@ -263,7 +263,28 @@ class Target:
             self.vy *= (-1)
 
 class Invader(Target):
-    pass
+
+    def __init__(self, screen):
+        self.x = randint(55, X_BORDER - 55)
+        self.y = randint(20, 100)
+        self.r = randint(2, 20)
+        color = self.color = RED
+        self.screen = screen
+        self.vx = randint(-5, 5)
+        self.vy = 0
+
+    def draw(self):
+        pygame.draw.rect(
+            self.screen,
+            self.color,
+            (self.x - self.r, self.y - self.r, 2 * self.r, 2 * self.r)
+            )
+
+    def bomb(self):
+        global balls
+        new_ball = Ball(self.screen, self.x, self.y + 2 * self.r + 10)
+        balls.append(new_ball)
+        
 
 def menuLoop():
     '''
@@ -664,6 +685,9 @@ bullet = 0
 balls = []
 numberOfTargets = 2
 targets = [Target(screen) for i in range(numberOfTargets)]
+for i in range(len(targets)):
+    if uniform(0, 1) < 0.4:
+        targets[i] = Invader(screen)
 score = 0
 levelTimer = 4 * FPS
 countBullets = True
@@ -678,6 +702,9 @@ finished = False
 
 while not finished:
     screen.fill(WHITE)
+    
+
+    
     if len(targets) == 0:
         startText()
         if levelTimer > 0:
@@ -687,7 +714,7 @@ while not finished:
             levelTimer = 4 * FPS
             targets = [Target(screen) for i in range(numberOfTargets)]
             for i in range(len(targets)):
-                if uniform(0, 1) < 0.2:
+                if uniform(0, 1) < 0.4:
                     targets[i] = Invader(screen)
             bullet = 0
             countBullets = True
@@ -732,9 +759,11 @@ while not finished:
                 t.hit()
                 score += t.points
                 targets.remove(t)
-            print(type(t))
     for t in targets:
         t.move()
+        if uniform(0,1) < 0.03 and type(t).__name__ == 'Invader':
+            t.bomb()
+            
 
     gun.power_up()
 
