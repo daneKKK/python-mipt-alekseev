@@ -190,11 +190,6 @@ class Gun:
             self.color = GREY
 
     def draw(self):
-        #global guns, activeGun
-        #if guns.index(self) == activeGun:
-        #    hullColor = GREEN
-        #else:
-        #    hullColor = GREY
             
         pygame.draw.rect(
             self.screen,
@@ -698,20 +693,31 @@ def saveData(name):
 
 def gameOver():
     global finished
-    print('Game over')
-    finished = True
+    global score
+    pygame.font.init()
+    myFont = pygame.font.SysFont('Comic Sans MS', 22)
+    text = 'Игра закончена. Вы заработали ' + str(score) + ' очков'
+    pygame.font.init()
+    myFont = pygame.font.SysFont('Comic Sans MS', 22)
+    textSurface = myFont.render(text, False, (0, 0, 0))
+    width = textSurface.get_width()
+    screen.blit(textSurface, ((X_BORDER // 2) - (width // 2), (Y_BORDER) // 3))
+
+def askASave():
+    answer = input('Сохранить данные? Y, если Да.\n')
+    return answer == 'Y'
 
 pygame.init()
 screen = pygame.display.set_mode((X_BORDER, Y_BORDER))
 bullet = 0
 balls = []
-numberOfTargets = 2
+numberOfTargets = 5
 targets = [Target(screen) for i in range(numberOfTargets)]
 for i in range(len(targets)):
     if uniform(0, 1) < 0.4:
         targets[i] = Invader(screen)
 
-numberOfGuns = 2
+numberOfGuns = 3
 activeGun = 0
 guns = [Gun(screen) for i in range(numberOfGuns)]
 
@@ -719,6 +725,8 @@ score = 0
 levelTimer = 4 * FPS
 countBullets = True
 doASave = False
+countBullets = True
+gameOverCounter = 150
 
 ax = 0
 ay = 1.5
@@ -729,6 +737,20 @@ finished = False
 
 while not finished:
     screen.fill(WHITE)
+
+    if numberOfGuns <= 0:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                doASave = askASave()
+                finished = True
+        if gameOverCounter <= 0:
+            doASave = askASave()
+            finished = True
+        gameOver()
+        gameOverCounter -= 1
+        pygame.display.update()
+        clock.tick(FPS)
+        continue
 
     activeGun = activeGun % numberOfGuns
 
@@ -762,10 +784,12 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            print('shoot')
             guns[activeGun].fire2_start(event)
         elif event.type == pygame.MOUSEBUTTONUP:
             guns[activeGun].fire2_end(event)
         elif event.type == pygame.MOUSEMOTION:
+            
             guns[activeGun].targetting(event)
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -781,6 +805,8 @@ while not finished:
     if pygame.key.get_pressed()[pygame.K_a]:
         guns[activeGun].move_left()
 
+
+
     for b in balls:
         b.move()
         if b.vx ** 2 + b.vy ** 2 < 0.1:
@@ -794,15 +820,16 @@ while not finished:
         for g in guns:
             if b.hittest(g, guns.index(g)):
                 guns.remove(g)
-                if len(guns) == 0:
-                    gameOver()
+                numberOfGuns -= 1
     for t in targets:
         t.move()
         if uniform(0,1) < 0.03 and type(t).__name__ == 'Invader':
             t.bomb()
             
-
-    gun.power_up()
+    try:
+        guns[activeGun].power_up()
+    except IndexError:
+        pass
 
 pygame.quit()
 if doASave:
