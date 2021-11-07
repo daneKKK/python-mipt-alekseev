@@ -1,5 +1,5 @@
 import math, json
-from random import choice, randint
+from random import choice, randint, uniform
 
 import pygame
 
@@ -70,6 +70,19 @@ class Ball:
                 self.vy = 0
             
             self.x -= 2 * (self.x + self.r - X_BORDER)
+
+        if self.x-self.r <= 0:
+            self.vx *= (-0.3)
+            self.vy *= 0.3
+
+            if abs(self.vx) < 0.1:
+                self.vx = 0
+
+            if abs(self.vy) < 1:
+                self.vy = 0
+            
+            self.x -= 2 * (self.x - self.r)
+        
         if self.y + self.r >= Y_BORDER:
             self.vy *= (-0.3)
             self.vx *= 0.3
@@ -103,6 +116,21 @@ class Ball:
         minimal_distance = (self.r + obj.r) ** 2
         return distance <= minimal_distance
 
+class Rocket(Ball):
+    def move(self):
+        self.x += self.vx
+        self.y += self.vy
+        
+    def draw(self):
+        headingCos = self.vx / math.sqrt(self.vx ** 2 + self.vy ** 2)
+        headingSin = self.vy / math.sqrt(self.vx ** 2 + self.vy ** 2)
+        headingAngle = math.atan2(headingSin, headingCos)
+        coordinates = [(self.x + self.r * headingCos, self.y + self.r * headingSin),
+                       (self.x + self.r * math.cos(headingAngle + 2 * math.pi / 3),
+                        self.y + self.r * math.sin(headingAngle + 2 * math.pi / 3)),
+                       (self.x + self.r * math.cos(headingAngle - 2 * math.pi / 3),
+                        self.y + self.r * math.sin(headingAngle - 2 * math.pi / 3))]
+        pygame.draw.polygon(self.screen, self.color, coordinates)        
 
 class Gun:
     def __init__(self, screen):
@@ -112,7 +140,7 @@ class Gun:
         self.an = 1
         self.color = GREY
         self.x = 40
-        self.y = 450
+        self.y = Y_BORDER - 10
 
     def fire2_start(self, event):
         self.f2_on = 1
@@ -126,7 +154,7 @@ class Gun:
         global balls, bullet, countBullets
         if countBullets:
             bullet += 1
-        new_ball = Ball(self.screen)
+        new_ball = Ball(self.screen, self.x, self.y)
         new_ball.r += 5
         self.an = math.atan2((event.pos[1]-new_ball.y), (event.pos[0]-new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
@@ -134,6 +162,18 @@ class Gun:
         balls.append(new_ball)
         self.f2_on = 0
         self.f2_power = 10
+
+    def rocket_fire(self, position):
+        global balls, bullet, countBullets
+        if not countBullets:
+            return
+        bullet += 1
+        new_rocket = Rocket(self.screen, self.x, self.y)
+        new_rocket.r += 5
+        self.an = math.atan2((position[1]-new_rocket.y), (position[0]-new_rocket.x))
+        new_rocket.vx = 4 * math.cos(self.an)
+        new_rocket.vy = 4 * math.sin(self.an)
+        balls.append(new_rocket)
 
     def targetting(self, event):
         """Прицеливание. Зависит от положения мыши."""
@@ -145,6 +185,10 @@ class Gun:
             self.color = GREY
 
     def draw(self):
+        pygame.draw.rect(
+            self.screen,
+            GREEN,
+            (self.x - 10, self.y, 20, 10))
         coordinates = [
             (5 / 2 * math.sin(self.an) + self.x, -5 / 2 * math.cos(self.an) + self.y),
             (-5 / 2 * math.sin(self.an) + self.x, 5 / 2 * math.cos(self.an) + self.y),
@@ -167,6 +211,13 @@ class Gun:
         else:
             self.color = GREY
 
+    def move_left(self):
+        self.x -= 5
+
+    def move_right(self):
+        self.x += 5
+
+
 
 class Target:
     points = 0
@@ -174,8 +225,8 @@ class Target:
 
     def __init__(self, screen):
         """ Инициализация новой цели. """
-        x = self.x = randint(600, 780)
-        y = self.y = randint(300, 550)
+        x = self.x = randint(55, X_BORDER - 55)
+        y = self.y = randint(55, Y_BORDER - 55)
         r = self.r = randint(2, 50)
         color = self.color = RED
         self.screen = screen
@@ -198,18 +249,21 @@ class Target:
         self.x += self.vx
         self.y += self.vy
 
-        if self.x + self.r >= 780:
-            self.x -= 2 * (self.x + self.r - 780)
+        if self.x + self.r >= X_BORDER - 55:
+            self.x -= 2 * (self.x + self.r - X_BORDER + 55)
             self.vx *= (-1)
-        if 600 >= self.x + self.r:
-            self.x += 2 * (600 - self.x - self.r)
+        if 55 >= self.x + self.r:
+            self.x += 2 * (55 - self.x - self.r)
             self.vx *= (-1)
-        if self.y + self.r >= 550:
-            self.y -= 2 * (self.y + self.r - 550)
+        if self.y + self.r >= Y_BORDER - 55:
+            self.y -= 2 * (self.y + self.r - Y_BORDER + 55)
             self.vy *= (-1)
-        if 300 >= self.y + self.r:
-            self.y += 2 * (300 - self.y - self.r)
+        if 55 >= self.y + self.r:
+            self.y += 2 * (55 - self.y - self.r)
             self.vy *= (-1)
+
+class Invader(Target):
+    pass
 
 def menuLoop():
     '''
@@ -221,7 +275,7 @@ def menuLoop():
         '''
         pygame.font.init()
         myFont = pygame.font.SysFont('Comic Sans MS', 40)
-        textSurface = myFont.render('Меню', False, (255, 255, 255))
+        textSurface = myFont.render('Меню', False, (0, 0, 0))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                   (Y_BORDER // 2) - 180))
@@ -232,7 +286,7 @@ def menuLoop():
         '''
         pygame.font.init()
         myFont = pygame.font.SysFont('Comic Sans MS', 29)
-        textSurface = myFont.render('Таблица лидеров', False, (255, 255, 255))
+        textSurface = myFont.render('Таблица лидеров', False, (0, 0, 0))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                   (Y_BORDER // 2) - 60))
@@ -243,7 +297,7 @@ def menuLoop():
         '''
         pygame.font.init()
         myFont = pygame.font.SysFont('Comic Sans MS', 29)
-        textSurface = myFont.render('Настройки', False, (255, 255, 255))
+        textSurface = myFont.render('Настройки', False, (0, 0, 0))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                   (Y_BORDER // 2) - 60))
@@ -254,7 +308,7 @@ def menuLoop():
         '''
         pygame.font.init()
         myFont = pygame.font.SysFont('Comic Sans MS', 29)
-        textSurface = myFont.render('Обучение', False, (255, 255, 255))
+        textSurface = myFont.render('Обучение', False, (0, 0, 0))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                   (Y_BORDER // 2) - 20))
@@ -265,7 +319,7 @@ def menuLoop():
         '''
         pygame.font.init()
         myFont = pygame.font.SysFont('Comic Sans MS', 29)
-        textSurface = myFont.render('Выйти', False, (255, 255, 255))
+        textSurface = myFont.render('Выйти', False, (0, 0, 0))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                   (Y_BORDER // 2) + 20))
@@ -276,7 +330,7 @@ def menuLoop():
         '''
         pygame.font.init()
         myFont = pygame.font.SysFont('Comic Sans MS', 29)
-        textSurface = myFont.render('Выйти и сохранить', False, (255, 255, 255))
+        textSurface = myFont.render('Выйти и сохранить', False, (0, 0, 0))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                   (Y_BORDER // 2) + 60))
@@ -286,7 +340,7 @@ def menuLoop():
         '''
         pygame.font.init()
         myFont = pygame.font.SysFont('Comic Sans MS', 29)
-        textSurface = myFont.render('Продолжить', False, (255, 255, 255))
+        textSurface = myFont.render('Продолжить', False, (0, 0, 0))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                   (Y_BORDER // 2) - 100))
@@ -316,12 +370,6 @@ def menuLoop():
             menuFinished = True
             return
 
-##        #Processing Настройки button
-##        if (y >= (Y_BORDER // 2) - 60 and
-##            y <= (Y_BORDER // 2) - 21):
-##            settingsLoop()
-##            return
-##
         #Processing Таблица лидеров button
         if (y >= (Y_BORDER // 2) - 60 and
             y <= (Y_BORDER // 2) - 21):
@@ -384,67 +432,9 @@ def menuLoop():
 
         pygame.display.update()
 
-        screen.fill((0, 0, 0))
+        screen.fill((255, 255, 255))
 
-def settingsLoop():
-    '''
-    Settings menu
-    '''
 
-    def drawSettings():
-        '''
-        Draw text
-        '''
-        pass
-
-    def processClick(event):
-        '''
-        Checkes whether click was on value of hitboxEnabled
-        event - event of click
-        '''
-        global hitboxEnabled
-        
-        x, y = event.pos
-
-        isOnXAxis = False
-        isOnYAxis = False
-
-        if not (x >= (X_BORDER // 2) - (71 // 2) + 200 and
-                x <= (X_BORDER // 2) + (71 // 2) + 200):
-            return
-
-        if (y >= ((Y_BORDER // 2) - 100) and
-            y <= (Y_BORDER // 2) - 61):
-            hitboxEnabled = not hitboxEnabled    
-        
-    global FPS
-    global clock
-    global finished
-    global screen
-    
-    settingsFinished = False
-
-    #Settings Loop
-    while not settingsFinished:
-        clock.tick(FPS)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                finished = True
-                return
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                processClick(event)
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    settingsFinished == True
-                    return
-                
-        #Draw settings text
-        drawSettings()
-        
-        pygame.display.update()
-
-        screen.fill((0, 0, 0))
     
 def tutorialLoop():
     '''
@@ -460,7 +450,7 @@ def tutorialLoop():
             '''
             pygame.font.init()
             myFont = pygame.font.SysFont('Comic Sans MS', 40)
-            textSurface = myFont.render('Обучение', False, (255, 255, 255))
+            textSurface = myFont.render('Обучение', False, (0, 0, 0))
             width = textSurface.get_width()
             screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                       (Y_BORDER // 2) - 180))
@@ -474,8 +464,8 @@ def tutorialLoop():
             height - given height.
             '''
             pygame.font.init()
-            myFont = pygame.font.SysFont('Comic Sans MS', 29)
-            textSurface = myFont.render(text, False, (255, 255, 255))
+            myFont = pygame.font.SysFont('Comic Sans MS', 24)
+            textSurface = myFont.render(text, False, (0, 0, 0))
             width = textSurface.get_width()
             screen.blit(textSurface, ((X_BORDER // 2) - 400,
                                       (Y_BORDER // 2) - 120 + height))
@@ -483,11 +473,12 @@ def tutorialLoop():
         drawTextTutorial()
         
         textArray = ['Цель игры:',
-                     '  Спасите Сон Ки Хунов от нападающих на на них кальмаров!',
-                     ' Нажимайте на них и получайте очки (+1 за Сон Ки Хуна,',
-                     ' +3 за кальмара)',
+                     '  Уничтожайте цели и опасайтесь бомб!',
+                     ' Зажимайте мышь и стреляйте.',
                      'Управление:',
-                     '  ESC - выйти в меню.']
+                     '  ESC - выйти в меню;',
+                     '  T - выстрел ракетой;',
+                     '  A, D - движение танка.']
 
         for i in range(len(textArray)):
             drawText(textArray[i], i * 40)
@@ -520,7 +511,7 @@ def tutorialLoop():
         
         pygame.display.update()
 
-        screen.fill((0, 0, 0))
+        screen.fill((255, 255, 255))
     
 def leaderboardLoop():
     '''
@@ -537,7 +528,7 @@ def leaderboardLoop():
             '''
             pygame.font.init()
             myFont = pygame.font.SysFont('Comic Sans MS', 40)
-            textSurface = myFont.render('Таблица лидеров', False, (255, 255, 255))
+            textSurface = myFont.render('Таблица лидеров', False, (0, 0, 0))
             width = textSurface.get_width()
             screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
                                       (Y_BORDER // 2) - 180))
@@ -552,8 +543,8 @@ def leaderboardLoop():
             '''
             text = str(number) + '. ' + str(name)
             pygame.font.init()
-            myFont = pygame.font.SysFont('Comic Sans MS', 29)
-            textSurface = myFont.render(text, False, (255, 255, 255))
+            myFont = pygame.font.SysFont('Comic Sans MS', 24)
+            textSurface = myFont.render(text, False, (0, 0, 0))
             width = textSurface.get_width()
             screen.blit(textSurface, ((X_BORDER // 2) - 250,
                                       (Y_BORDER // 2) - 120 + height))
@@ -568,7 +559,7 @@ def leaderboardLoop():
             '''
             text = str(score) + ' pts.'
             pygame.font.init()
-            myFont = pygame.font.SysFont('Comic Sans MS', 29)
+            myFont = pygame.font.SysFont('Comic Sans MS', 24)
             textSurface = myFont.render(text, False, (255, 255, 255))
             width = textSurface.get_width()
             screen.blit(textSurface, ((X_BORDER // 2) - (width // 2) + 150,
@@ -615,7 +606,7 @@ def leaderboardLoop():
         
         pygame.display.update()
 
-        screen.fill((0, 0, 0))
+        screen.fill((255, 255, 255))
 
 
 def drawScore():
@@ -695,8 +686,12 @@ while not finished:
         else:
             levelTimer = 4 * FPS
             targets = [Target(screen) for i in range(numberOfTargets)]
+            for i in range(len(targets)):
+                if uniform(0, 1) < 0.2:
+                    targets[i] = Invader(screen)
             bullet = 0
             countBullets = True
+            balls = []
     
     drawScore()
     gun.draw()
@@ -719,6 +714,13 @@ while not finished:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 menuLoop()
+            elif event.key == pygame.K_t:
+                gun.rocket_fire(pygame.mouse.get_pos())
+
+    if pygame.key.get_pressed()[pygame.K_d]:
+        gun.move_right()
+    if pygame.key.get_pressed()[pygame.K_a]:
+        gun.move_left()
 
     for b in balls:
         b.move()
@@ -730,6 +732,7 @@ while not finished:
                 t.hit()
                 score += t.points
                 targets.remove(t)
+            print(type(t))
     for t in targets:
         t.move()
 
