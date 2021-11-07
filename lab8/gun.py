@@ -104,7 +104,7 @@ class Ball:
             self.r
         )
 
-    def hittest(self, obj):
+    def hittest(self, obj, obj_side):
         """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
 
         Args:
@@ -112,6 +112,8 @@ class Ball:
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
+        if obj_side == self.side:
+            return False
         distance = (self.x - obj.x) ** 2 + (self.y - obj.y) ** 2
         minimal_distance = (self.r + obj.r) ** 2
         return distance <= minimal_distance
@@ -137,9 +139,10 @@ class Gun:
         self.screen = screen
         self.f2_power = 10
         self.f2_on = 0
+        self.r = 10
         self.an = 1
         self.color = GREY
-        self.x = 40
+        self.x = randint(10, X_BORDER - 10)
         self.y = Y_BORDER - 10
 
     def fire2_start(self, event):
@@ -151,7 +154,7 @@ class Gun:
         Происходит при отпускании кнопки мыши.
         Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
         """
-        global balls, bullet, countBullets
+        global balls, bullet, countBullets, guns
         if countBullets:
             bullet += 1
         new_ball = Ball(self.screen, self.x, self.y)
@@ -159,12 +162,13 @@ class Gun:
         self.an = math.atan2((event.pos[1]-new_ball.y), (event.pos[0]-new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
         new_ball.vy = self.f2_power * math.sin(self.an)
+        new_ball.side = guns.index(self)
         balls.append(new_ball)
         self.f2_on = 0
         self.f2_power = 10
 
     def rocket_fire(self, position):
-        global balls, bullet, countBullets
+        global balls, bullet, countBullets, guns
         if not countBullets:
             return
         bullet += 1
@@ -173,6 +177,7 @@ class Gun:
         self.an = math.atan2((position[1]-new_rocket.y), (position[0]-new_rocket.x))
         new_rocket.vx = 4 * math.cos(self.an)
         new_rocket.vy = 4 * math.sin(self.an)
+        new_rocket.side = guns.index(self)
         balls.append(new_rocket)
 
     def targetting(self, event):
@@ -185,6 +190,12 @@ class Gun:
             self.color = GREY
 
     def draw(self):
+        #global guns, activeGun
+        #if guns.index(self) == activeGun:
+        #    hullColor = GREEN
+        #else:
+        #    hullColor = GREY
+            
         pygame.draw.rect(
             self.screen,
             GREEN,
@@ -213,9 +224,11 @@ class Gun:
 
     def move_left(self):
         self.x -= 5
+        self.x = self.x % X_BORDER
 
     def move_right(self):
         self.x += 5
+        self.x = self.x % X_BORDER
 
 
 
@@ -263,7 +276,7 @@ class Target:
             self.vy *= (-1)
 
 class Invader(Target):
-
+    
     def __init__(self, screen):
         self.x = randint(55, X_BORDER - 55)
         self.y = randint(20, 100)
@@ -282,7 +295,9 @@ class Invader(Target):
 
     def bomb(self):
         global balls
-        new_ball = Ball(self.screen, self.x, self.y + 2 * self.r + 10)
+        new_ball = Rocket(self.screen, self.x, self.y + 2 * self.r + 10)
+        new_ball.vy = 12
+        new_ball.side = -1
         balls.append(new_ball)
         
 
@@ -495,11 +510,13 @@ def tutorialLoop():
         
         textArray = ['Цель игры:',
                      '  Уничтожайте цели и опасайтесь бомб!',
-                     ' Зажимайте мышь и стреляйте.',
-                     'Управление:',
+                     ' Зажимайте мышь и стреляйте.'
+                     ' Будьте осторожны: бомбы (в т.ч. ',
+                     'ваши) могут  разрушить танк, в который попали.',                    'Управление:',
                      '  ESC - выйти в меню;',
-                     '  T - выстрел ракетой;',
-                     '  A, D - движение танка.']
+                     '  W - выстрел ракетой;',
+                     '  A, D - движение танка;',
+                     '  S - поменять танк.']
 
         for i in range(len(textArray)):
             drawText(textArray[i], i * 40)
@@ -679,6 +696,11 @@ def saveData(name):
     with open('leaderboard.json', 'w') as f:
         json.dump(data, f)
 
+def gameOver():
+    global finished
+    print('Game over')
+    finished = True
+
 pygame.init()
 screen = pygame.display.set_mode((X_BORDER, Y_BORDER))
 bullet = 0
@@ -688,6 +710,11 @@ targets = [Target(screen) for i in range(numberOfTargets)]
 for i in range(len(targets)):
     if uniform(0, 1) < 0.4:
         targets[i] = Invader(screen)
+
+numberOfGuns = 2
+activeGun = 0
+guns = [Gun(screen) for i in range(numberOfGuns)]
+
 score = 0
 levelTimer = 4 * FPS
 countBullets = True
@@ -702,7 +729,8 @@ finished = False
 
 while not finished:
     screen.fill(WHITE)
-    
+
+    activeGun = activeGun % numberOfGuns
 
     
     if len(targets) == 0:
@@ -721,7 +749,8 @@ while not finished:
             balls = []
     
     drawScore()
-    gun.draw()
+    for g in guns:
+        g.draw()
     for t in targets:
         t.draw()
     for b in balls:
@@ -733,32 +762,40 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            gun.fire2_start(event)
+            guns[activeGun].fire2_start(event)
         elif event.type == pygame.MOUSEBUTTONUP:
-            gun.fire2_end(event)
+            guns[activeGun].fire2_end(event)
         elif event.type == pygame.MOUSEMOTION:
-            gun.targetting(event)
+            guns[activeGun].targetting(event)
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 menuLoop()
-            elif event.key == pygame.K_t:
-                gun.rocket_fire(pygame.mouse.get_pos())
+            elif event.key == pygame.K_w:
+                guns[activeGun].rocket_fire(pygame.mouse.get_pos())
+            elif event.key == pygame.K_s:
+                activeGun +=1
+                activeGun = activeGun % numberOfGuns
 
     if pygame.key.get_pressed()[pygame.K_d]:
-        gun.move_right()
+        guns[activeGun].move_right()
     if pygame.key.get_pressed()[pygame.K_a]:
-        gun.move_left()
+        guns[activeGun].move_left()
 
     for b in balls:
         b.move()
         if b.vx ** 2 + b.vy ** 2 < 0.1:
             balls.remove(b)
         for t in targets:
-            if b.hittest(t) and t.live:
+            if b.hittest(t, -1) and t.live:
                 t.live = 0
                 t.hit()
                 score += t.points
                 targets.remove(t)
+        for g in guns:
+            if b.hittest(g, guns.index(g)):
+                guns.remove(g)
+                if len(guns) == 0:
+                    gameOver()
     for t in targets:
         t.move()
         if uniform(0,1) < 0.03 and type(t).__name__ == 'Invader':
