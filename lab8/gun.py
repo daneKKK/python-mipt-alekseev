@@ -17,8 +17,8 @@ WHITE = 0xFFFFFF
 GREY = 0x7D7D7D
 GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
-WIDTH = 800
-HEIGHT = 600
+X_BORDER = 800
+Y_BORDER = 600
 
 
 class Ball:
@@ -211,6 +211,414 @@ class Target:
             self.y += 2 * (300 - self.y - self.r)
             self.vy *= (-1)
 
+def menuLoop():
+    '''
+    Function that will show game menu.
+    '''
+    def drawMenu():
+        '''
+        Draws text "Меню"
+        '''
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 40)
+        textSurface = myFont.render('Меню', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) - 180))
+
+    def drawLeaderboardMenu():
+        '''
+        Draws text "Таблица лидеров"
+        '''
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
+        textSurface = myFont.render('Таблица лидеров', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) - 20))
+        
+    def drawSettingsMenu():
+        '''
+        Draws text "Настройки"
+        '''
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
+        textSurface = myFont.render('Настройки', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) - 60))
+
+    def drawTutorialMenu():
+        '''
+        Draws text "Обучение"
+        '''
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
+        textSurface = myFont.render('Обучение', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) + 20))
+
+    def drawQuitMenu():
+        '''
+        Draws text "Выйти"
+        '''
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
+        textSurface = myFont.render('Выйти', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) + 60))
+
+    def drawQuitAndSaveMenu():
+        '''
+        Draws text "Выйти"
+        '''
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
+        textSurface = myFont.render('Выйти и сохранить', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) + 100))
+    def drawContinueMenu():
+        '''
+        Draws text "Продолжить"
+        '''
+        pygame.font.init()
+        myFont = pygame.font.SysFont('Comic Sans MS', 29)
+        textSurface = myFont.render('Продолжить', False, (255, 255, 255))
+        width = textSurface.get_width()
+        screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                  (Y_BORDER // 2) - 100))
+
+    def processClick(event):
+        '''
+        Checks whether click position was in one of the menu buttons
+        event - event of click
+        '''
+        x, y = event.pos
+
+        nonlocal menuFinished
+        global finished
+        global doASave
+
+        isOnXAxis = False
+        isOnYAxis = False
+
+        #Processing X position of click
+        if  not (x >= (X_BORDER // 2) - (270 // 2) and
+            x <= (X_BORDER // 2) + (270 // 2)):
+            return
+
+        #Processing Продолжить button
+        if (y >= (Y_BORDER // 2) - 100 and
+            y <= (Y_BORDER // 2) - 61 ):
+            menuFinished = True
+            return
+
+        #Processing Настройки button
+        if (y >= (Y_BORDER // 2) - 60 and
+            y <= (Y_BORDER // 2) - 21):
+            settingsLoop()
+            return
+
+        #Processing Таблица лидеров button
+        if (y >= (Y_BORDER // 2) - 20 and
+            y <= (Y_BORDER // 2) + 19):
+            leaderboardLoop()
+            return
+
+        #Processing Обучение button
+        if (y >= (Y_BORDER // 2) + 20 and
+            y <= (Y_BORDER // 2) + 59):
+            tutorialLoop()
+            return
+
+        #Processing Выход button
+        if (y >= (Y_BORDER // 2) + 60 and
+            y <= (Y_BORDER // 2) + 99):
+            finished = True
+            menuFinished = True
+            return
+
+        #Processing Выйти и сохранить
+        if (y >= (Y_BORDER // 2) + 100 and
+            y <= (Y_BORDER // 2) + 139):
+            finished = True
+            menuFinished = True
+            doASave = True
+            return
+            
+        
+
+    global FPS
+    global clock
+    global finished
+    global screen
+    
+    menuFinished = False
+
+    #Menu Loop
+    while (not menuFinished) and (not finished):
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                processClick(event)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    finished == True
+                    return
+
+        #Drawing menu elements
+        drawMenu()
+
+        drawContinueMenu()
+        drawSettingsMenu()
+        drawLeaderboardMenu()
+        drawTutorialMenu()
+        drawQuitMenu()
+        drawQuitAndSaveMenu()
+
+        pygame.display.update()
+
+        screen.fill((0, 0, 0))
+
+def settingsLoop():
+    '''
+    Settings menu
+    '''
+
+    def drawSettings():
+        '''
+        Draw text
+        '''
+        pass
+
+    def processClick(event):
+        '''
+        Checkes whether click was on value of hitboxEnabled
+        event - event of click
+        '''
+        global hitboxEnabled
+        
+        x, y = event.pos
+
+        isOnXAxis = False
+        isOnYAxis = False
+
+        if not (x >= (X_BORDER // 2) - (71 // 2) + 200 and
+                x <= (X_BORDER // 2) + (71 // 2) + 200):
+            return
+
+        if (y >= ((Y_BORDER // 2) - 100) and
+            y <= (Y_BORDER // 2) - 61):
+            hitboxEnabled = not hitboxEnabled    
+        
+    global FPS
+    global clock
+    global finished
+    global screen
+    
+    settingsFinished = False
+
+    #Settings Loop
+    while not settingsFinished:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                processClick(event)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    settingsFinished == True
+                    return
+                
+        #Draw settings text
+        drawSettings()
+        
+        pygame.display.update()
+
+        screen.fill((0, 0, 0))
+    
+def tutorialLoop():
+    '''
+    Starts the tutorial menu.
+    '''
+    def drawTutorial():
+        '''
+        Draws all the text of tutorial
+        '''
+        def drawTextTutorial():
+            '''
+            Draws Обучение
+            '''
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 40)
+            textSurface = myFont.render('Обучение', False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                      (Y_BORDER // 2) - 180))
+
+        
+        def drawText(text, height):
+            '''
+            Draws given text at the given height relative to
+            y = (Y_BORDER // 2) - 120
+            text - given text;
+            height - given height.
+            '''
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 29)
+            textSurface = myFont.render(text, False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - 400,
+                                      (Y_BORDER // 2) - 120 + height))
+
+        drawTextTutorial()
+        
+        textArray = ['Цель игры:',
+                     '  Спасите Сон Ки Хунов от нападающих на на них кальмаров!',
+                     ' Нажимайте на них и получайте очки (+1 за Сон Ки Хуна,',
+                     ' +3 за кальмара)',
+                     'Управление:',
+                     '  ESC - выйти в меню.']
+
+        for i in range(len(textArray)):
+            drawText(textArray[i], i * 40)
+
+        
+        
+        
+    global FPS
+    global clock
+    global finished
+    global screen
+    
+    tutorialFinished = False
+
+    #Tutorial Loop
+    while not tutorialFinished:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    tutorialFinished == True
+                    return
+                
+        #Draw settings text
+        drawTutorial()
+        
+        pygame.display.update()
+
+        screen.fill((0, 0, 0))
+    
+def leaderboardLoop():
+    '''
+    Leaderboard menu
+    '''
+    def drawLeaderboard():
+        '''
+        Draw text for leaderboard
+        '''
+
+        def drawTextLeaderboard():
+            '''
+            Draws Таблица лидеров
+            '''
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 40)
+            textSurface = myFont.render('Таблица лидеров', False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
+                                      (Y_BORDER // 2) - 180))
+
+        def drawName(number, name, height):
+            '''
+            Draws given name and number in leaderboard at the left part
+            of the screen at the given height relative to
+            y = (Y_BORDER // 2) - 120.
+            text - given text;
+            height - given height.
+            '''
+            text = str(number) + '. ' + str(name)
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 29)
+            textSurface = myFont.render(text, False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - 500,
+                                      (Y_BORDER // 2) - 120 + height))
+            
+        def drawScore(score, height):
+            '''
+            Draws given score in leaderboard at the right part
+            of the screen at the given height relative to
+            y = (Y_BORDER // 2) - 120.
+            text - given text;
+            height - given height.
+            '''
+            text = str(score) + ' pts.'
+            pygame.font.init()
+            myFont = pygame.font.SysFont('Comic Sans MS', 29)
+            textSurface = myFont.render(text, False, (255, 255, 255))
+            width = textSurface.get_width()
+            screen.blit(textSurface, ((X_BORDER // 2) - (width // 2) + 400,
+                                      (Y_BORDER // 2) - 120 + height))
+        
+        nonlocal data
+
+        drawTextLeaderboard()
+
+        number = 1
+        
+        for w in sorted(data, key=data.get, reverse=True):
+            drawName(number, w, number * 40)
+            drawScore(data[w], number * 40)
+            number +=1
+            if number > 10:
+                break
+        
+    
+    try:
+        with open('leaderboard.json') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+
+
+    leaderboardFinished = False
+    
+    #Leaderboard loop
+    while not leaderboardFinished:
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    leaderboardFinished == True
+                    return
+                
+        #Draw leaderboard text
+        drawLeaderboard()
+        
+        pygame.display.update()
+
+        screen.fill((0, 0, 0))
+
+
 def drawScore():
     '''
     Draws score. Takes score as global variable.
@@ -235,7 +643,7 @@ def startText():
 
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((X_BORDER, Y_BORDER))
 bullet = 0
 balls = []
 numberOfTargets = 2
@@ -282,6 +690,9 @@ while not finished:
             gun.fire2_end(event)
         elif event.type == pygame.MOUSEMOTION:
             gun.targetting(event)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                menuLoop()
 
     for b in balls:
         b.move()
