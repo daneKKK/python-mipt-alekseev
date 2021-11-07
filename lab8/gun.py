@@ -784,7 +784,6 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print('shoot')
             guns[activeGun].fire2_start(event)
         elif event.type == pygame.MOUSEBUTTONUP:
             guns[activeGun].fire2_end(event)
