@@ -1,4 +1,4 @@
-import math
+import math, json
 from random import choice, randint
 
 import pygame
@@ -47,19 +47,19 @@ class Ball:
         """
         global ax
         global ay
-        global WIDTH
-        global HEIGHT
+        global X_BORDER
+        global Y_BORDER
         
         self.x += self.vx
         self.y += self.vy
         self.vx += ax
         self.vy += ay
 
-        if abs(HEIGHT - self.r - self.y) < 5:
+        if abs(Y_BORDER - self.r - self.y) < 5:
             self.vy -= ay
             self.vx *= 0.9
         
-        if self.x+self.r >= WIDTH:
+        if self.x+self.r >= X_BORDER:
             self.vx *= (-0.3)
             self.vy *= 0.3
 
@@ -69,8 +69,8 @@ class Ball:
             if abs(self.vy) < 1:
                 self.vy = 0
             
-            self.x -= 2 * (self.x + self.r - WIDTH)
-        if self.y + self.r >= HEIGHT:
+            self.x -= 2 * (self.x + self.r - X_BORDER)
+        if self.y + self.r >= Y_BORDER:
             self.vy *= (-0.3)
             self.vx *= 0.3
 
@@ -80,7 +80,7 @@ class Ball:
             if abs(self.vy) < 1:
                 self.vy = 0
                 
-            self.y -= 2 * (self.y + self.r - HEIGHT)
+            self.y -= 2 * (self.y + self.r - Y_BORDER)
 
 
     def draw(self):
@@ -235,7 +235,7 @@ def menuLoop():
         textSurface = myFont.render('Таблица лидеров', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
-                                  (Y_BORDER // 2) - 20))
+                                  (Y_BORDER // 2) - 60))
         
     def drawSettingsMenu():
         '''
@@ -257,7 +257,7 @@ def menuLoop():
         textSurface = myFont.render('Обучение', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
-                                  (Y_BORDER // 2) + 20))
+                                  (Y_BORDER // 2) - 20))
 
     def drawQuitMenu():
         '''
@@ -268,7 +268,7 @@ def menuLoop():
         textSurface = myFont.render('Выйти', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
-                                  (Y_BORDER // 2) + 60))
+                                  (Y_BORDER // 2) + 20))
 
     def drawQuitAndSaveMenu():
         '''
@@ -279,7 +279,7 @@ def menuLoop():
         textSurface = myFont.render('Выйти и сохранить', False, (255, 255, 255))
         width = textSurface.get_width()
         screen.blit(textSurface, ((X_BORDER // 2) - (width // 2),
-                                  (Y_BORDER // 2) + 100))
+                                  (Y_BORDER // 2) + 60))
     def drawContinueMenu():
         '''
         Draws text "Продолжить"
@@ -316,34 +316,34 @@ def menuLoop():
             menuFinished = True
             return
 
-        #Processing Настройки button
+##        #Processing Настройки button
+##        if (y >= (Y_BORDER // 2) - 60 and
+##            y <= (Y_BORDER // 2) - 21):
+##            settingsLoop()
+##            return
+##
+        #Processing Таблица лидеров button
         if (y >= (Y_BORDER // 2) - 60 and
             y <= (Y_BORDER // 2) - 21):
-            settingsLoop()
-            return
-
-        #Processing Таблица лидеров button
-        if (y >= (Y_BORDER // 2) - 20 and
-            y <= (Y_BORDER // 2) + 19):
             leaderboardLoop()
             return
 
         #Processing Обучение button
-        if (y >= (Y_BORDER // 2) + 20 and
-            y <= (Y_BORDER // 2) + 59):
+        if (y >= (Y_BORDER // 2) - 20 and
+            y <= (Y_BORDER // 2) + 19):
             tutorialLoop()
             return
 
         #Processing Выход button
-        if (y >= (Y_BORDER // 2) + 60 and
-            y <= (Y_BORDER // 2) + 99):
+        if (y >= (Y_BORDER // 2) + 20 and
+            y <= (Y_BORDER // 2) + 59):
             finished = True
             menuFinished = True
             return
 
         #Processing Выйти и сохранить
-        if (y >= (Y_BORDER // 2) + 100 and
-            y <= (Y_BORDER // 2) + 139):
+        if (y >= (Y_BORDER // 2) + 60 and
+            y <= (Y_BORDER // 2) + 99):
             finished = True
             menuFinished = True
             doASave = True
@@ -377,7 +377,6 @@ def menuLoop():
         drawMenu()
 
         drawContinueMenu()
-        drawSettingsMenu()
         drawLeaderboardMenu()
         drawTutorialMenu()
         drawQuitMenu()
@@ -556,7 +555,7 @@ def leaderboardLoop():
             myFont = pygame.font.SysFont('Comic Sans MS', 29)
             textSurface = myFont.render(text, False, (255, 255, 255))
             width = textSurface.get_width()
-            screen.blit(textSurface, ((X_BORDER // 2) - 500,
+            screen.blit(textSurface, ((X_BORDER // 2) - 250,
                                       (Y_BORDER // 2) - 120 + height))
             
         def drawScore(score, height):
@@ -572,7 +571,7 @@ def leaderboardLoop():
             myFont = pygame.font.SysFont('Comic Sans MS', 29)
             textSurface = myFont.render(text, False, (255, 255, 255))
             width = textSurface.get_width()
-            screen.blit(textSurface, ((X_BORDER // 2) - (width // 2) + 400,
+            screen.blit(textSurface, ((X_BORDER // 2) - (width // 2) + 150,
                                       (Y_BORDER // 2) - 120 + height))
         
         nonlocal data
@@ -639,8 +638,34 @@ def startText():
     myFont = pygame.font.SysFont('Comic Sans MS', 22)
     textSurface = myFont.render(text, False, (0, 0, 0))
     width = textSurface.get_width()
-    screen.blit(textSurface, ((WIDTH // 2) - (width // 2), (HEIGHT) // 3))
+    screen.blit(textSurface, ((X_BORDER // 2) - (width // 2), (Y_BORDER) // 3))
 
+
+def saveData(name):
+    '''
+    Saves data to leaderboard.json
+    name - name that will be written in file
+    '''
+    global score
+    data = {}
+    try:
+        with open('leaderboard.json') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+    if name in data:
+        print('Вы уверены, что хотите сохранить очки под этим именем? \n')
+        if int(data[name]) > score:
+            print('Если вы впишете очки под этим именем, то понизите рекорд.\n')
+        print('Если Вы уверены, то введите Y. Иначе данные не сохранятся\n')
+        print('Сохранить данные?')
+        answer = input()
+        if answer != 'Y':
+            return
+        
+    data[name] = score
+    with open('leaderboard.json', 'w') as f:
+        json.dump(data, f)
 
 pygame.init()
 screen = pygame.display.set_mode((X_BORDER, Y_BORDER))
@@ -651,6 +676,7 @@ targets = [Target(screen) for i in range(numberOfTargets)]
 score = 0
 levelTimer = 4 * FPS
 countBullets = True
+doASave = False
 
 ax = 0
 ay = 1.5
@@ -710,3 +736,5 @@ while not finished:
     gun.power_up()
 
 pygame.quit()
+if doASave:
+    saveData(input('Введите имя\n'))
